@@ -23,8 +23,6 @@
 		} catch (e) {
 			console.error(e);
 			push("Please, accept permission");
-			await tick();
-			await getUserMedia();
 		}
 	}
 

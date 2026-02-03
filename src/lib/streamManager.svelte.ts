@@ -1,23 +1,12 @@
+import { PUBLIC_ICE_SERVERS } from "$env/static/public";
 import { connection, onWsMessage, sendWsMessage, type Tid } from "$lib/ws.svelte";
 import { tick } from "svelte";
 
+const iceServers = PUBLIC_ICE_SERVERS.split(",").map(url => ({ urls: url.trim() }));
+
 export const streamManager = (() => {
 	const servers: RTCConfiguration = {
-		iceServers: [
-			{
-				urls: "stun:stun.relay.metered.ca:80"
-			},
-			{
-				urls: "turn:standard.relay.metered.ca:80",
-				username: "9df5a10a093ff890b8cb9dac",
-				credential: "U7oguQTnz/ciUWtd"
-			},
-			{
-				urls: "turn:standard.relay.metered.ca:443",
-				username: "9df5a10a093ff890b8cb9dac",
-				credential: "U7oguQTnz/ciUWtd"
-			}
-		]
+		iceServers
 	};
 
 	console.log(`[webrtcServers]: ${JSON.stringify(servers)}`);
