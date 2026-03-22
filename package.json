@@ -23,7 +23,8 @@
 		"vite": "^7.3.1"
 	},
 	"dependencies": {
-		"@scure/bip39": "^1.5.0",
-		"nostr-tools": "^2.23.0"
+		"@fortawesome/free-brands-svg-icons": "^7.2.0",
+		"@fortawesome/free-solid-svg-icons": "^7.2.0",
+		"svelte-fa": "^4.0.4"
 	}
 }

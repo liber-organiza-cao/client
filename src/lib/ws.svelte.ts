@@ -1,73 +1,45 @@
-import { PUBLIC_API_URL } from "$env/static/public";
-import { SvelteMap } from "svelte/reactivity";
-import { getPublicKey } from "nostr-tools";
-import { mnemonicToSeed } from "@scure/bip39";
+import { parse } from "./utils";
 
-export type ClientToServerMsg = {
-	SendMessage: {
-		channel: string;
-		content: string;
-	};
-	ChangeStatus: {
-		author: number;
-		afk: boolean;
-	};
-	Offer: Tid<RTCSessionDescriptionInit>;
-	Answer: Tid<RTCSessionDescriptionInit>;
-	Candidate: Tid<RTCIceCandidateInit>;
-	JoinVoiceChannel: { channel: string };
-	LeaveVoiceChannel: { channel: string };
-	SetPubkey: { pubkey: string };
-};
+export class WS<S, R> {
+	private ws: WebSocket;
 
-export type Tid<T> = {
-	id: number;
-	data: T;
-};
+	onMessage?: (msg: R) => void;
+	onOpen?: () => void;
+	onClose?: (ev: CloseEvent) => void;
+	onError?: (ev: Event) => void;
 
-export const WS = new WebSocket(PUBLIC_API_URL);
+	constructor(url: string) {
+		this.ws = new WebSocket(url);
 
-export const connection = $state({
-	id: 0
-});
+		this.ws.onopen = () => {
+			this.onOpen?.();
+		};
 
-export const connIdToPubkeyMap = new SvelteMap<number, string>();
+		this.ws.onmessage = (raw: MessageEvent) => {
+			const msg = parse<R>(raw.data);
+			if (msg) {
+				this.onMessage?.(msg);
+			}
+		};
 
-export function sendWsMessage<Key extends keyof ClientToServerMsg>(
-	key: Key,
-	content: ClientToServerMsg[Key]
-) {
-	return WS.send(JSON.stringify({ [key]: content }));
-}
+		this.ws.onclose = (ev: CloseEvent) => {
+			this.onClose?.(ev);
+		};
 
-export function onWsMessage(callback: (type: string, data: unknown) => void) {
-	WS.addEventListener("message", (e) => {
-		const json = JSON.parse(e.data);
-
-		const type = Object.keys(json)[0];
-		const data = json[type];
-
-		callback(type, data);
-	});
-}
-
-export async function updateMySecretKey(seed: string) {
-	sessionStorage.setItem("seed", seed);
-
-	const secretKey = (await mnemonicToSeed(seed)).slice(0, 32);
-
-	sendWsMessage("SetPubkey", {
-		pubkey: getPublicKey(secretKey)
-	});
-}
-
-onWsMessage((type, data) => {
-	if (type == "Connected") {
-		const { id } = data as { id: number };
-		connection.id = id;
-
-		const seed = sessionStorage.getItem("seed");
-
-		if (seed) updateMySecretKey(seed);
+		this.ws.onerror = (ev: Event) => {
+			this.onError?.(ev);
+		};
 	}
-});
+
+	send(data: S) {
+		if (this.ws.readyState === WebSocket.OPEN) {
+			this.ws.send(JSON.stringify(data));
+		} else {
+			console.warn("WebSocket not open. Current state:", this.ws.readyState);
+		}
+	}
+
+	close(code?: number, reason?: string) {
+		this.ws.close(code, reason);
+	}
+}

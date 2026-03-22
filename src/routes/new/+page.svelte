@@ -1,0 +1,50 @@
+<script lang="ts">
+    import { goto } from "$app/navigation";
+    import { getInfo, type GetInfoResponse } from "$lib/api";
+    import { servers } from "$lib/ServerManager.svelte";
+    import { debounce } from "$lib/utils";
+
+    let url = $state("");
+    let serverInfo: GetInfoResponse | undefined = $state();
+
+    async function updateInfo() {
+        const [ok, value] = await getInfo(url);
+        if (ok) {
+            serverInfo = value;
+        } else {
+            serverInfo = undefined;
+        }
+    }
+
+    async function submit() {
+        servers.update((s) => [...s, url]);
+        goto("/");
+    }
+</script>
+
+<div
+    class="flex flex-col w-screen h-screen items-center justify-center bg-zinc-950"
+>
+    <form
+        class="flex flex-col items-center gap-2"
+        onsubmit={(event) => {
+            event.preventDefault();
+            submit();
+        }}
+    >
+        <img class="w-44 h-44" src={`${url}/icon`} alt="icon" />
+        <h1 class="text-white h-6">{serverInfo?.title}</h1>
+        <input
+            bind:value={url}
+            onchange={debounce(updateInfo)}
+            class=" text-white p-2 rounded-md border-2"
+            placeholder="https://example.com"
+        />
+        <button
+            type="submit"
+            disabled={serverInfo == undefined}
+            class="w-full bg-zinc-900 text-white p-2 rounded-md cursor-pointer"
+            >Adicionar</button
+        >
+    </form>
+</div>

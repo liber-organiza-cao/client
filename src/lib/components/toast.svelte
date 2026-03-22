@@ -1,11 +1,14 @@
-<script module lang="ts">
+<script lang="ts" module>
+	import { faX } from "@fortawesome/free-solid-svg-icons";
+	import Fa from "svelte-fa";
+	import { SvelteMap } from "svelte/reactivity";
 	import { fade } from "svelte/transition";
 
 	interface Toast {
-		id: number;
 		duration: number;
 		msg: string;
 		onEnd?: () => void;
+		timer: number;
 	}
 
 	interface Options {
@@ -13,35 +16,58 @@
 		onEnd?: () => void;
 	}
 
-	let toasts = $state<Toast[]>([]);
+	let toasts = $state(new SvelteMap<number, Toast>());
 	let counter = $state(0);
 
 	export function push(msg: string, options?: Options) {
-		counter++;
-		const id = counter;
+		const id = counter++;
 		const duration = options?.duration ?? 5000;
-		toasts.push({ id, msg, duration, onEnd: options?.onEnd });
-		setTimeout(() => {
+
+		const timer = window.setTimeout(() => {
 			cancel(id);
 		}, duration);
+
+		toasts.set(id, { msg, duration, timer, onEnd: options?.onEnd });
+
 		return id;
 	}
 	export function cancel(id: number) {
-		toasts = toasts.filter((value) => {
-			const eq = value.id == id;
-			if (eq && value.onEnd) {
-				value.onEnd();
-			}
-			return !eq;
-		});
+		return toasts.delete(id);
+	}
+
+	function toastWait(id: number) {
+		const toast = toasts.get(id);
+		if (!toast) return;
+
+		window.clearTimeout(toast.timer);
+	}
+	function toastContinue(id: number) {
+		const toast = toasts.get(id);
+		if (!toast) return;
+
+		const timer = window.setTimeout(() => {
+			cancel(id);
+		}, toast.duration);
+		toast.timer = timer;
 	}
 </script>
 
-<div class="fixed right-0 top-0 z-50 flex flex-col gap-2 p-2">
-	{#each toasts as toast}
-		<div transition:fade class="flex gap-2 rounded-md bg-slate-800 p-2 text-white">
-			<p>{toast.msg}</p>
-			<button onclick={() => cancel(toast.id)} class=" h-5 w-5 rounded-md bg-red-800">X</button>
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div class="fixed right-0 top-0 z-50 flex flex-col gap-2 p-4">
+	{#each toasts as [id, toast]}
+		<div
+			transition:fade
+			onmouseenter={() => toastWait(id)}
+			onmouseleave={() => toastContinue(id)}
+			class="flex gap-2 rounded-sm bg-purple-800 p-2 text-white"
+		>
+			<p class="truncate">{toast.msg}</p>
+			<button
+				onclick={() => cancel(id)}
+				class="flex items-center justify-center h-6 w-6 rounded-sm bg-purple-600"
+			>
+				<Fa icon={faX}></Fa></button
+			>
 		</div>
 	{/each}
 </div>
