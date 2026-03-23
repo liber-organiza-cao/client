@@ -1,25 +1,13 @@
 <script lang="ts">
-    import { onMount } from "svelte";
-    import { getInfo, type GetInfoResponse } from "../api";
-    import { push } from "./toast.svelte";
-    import { currentServer } from "$lib/ServerManager.svelte";
+    import { type GetInfoResponse } from "../api";
+    import useServers from "$lib/server.svelte";
 
-    const { url }: { url: string } = $props();
-
-    let info: GetInfoResponse | undefined = $state();
+    const { url, data }: { url: string; data: GetInfoResponse } = $props();
+    let { currentServer } = useServers();
 
     async function onClick() {
-        currentServer.set(url);
+        currentServer.set({ url, data });
     }
-
-    onMount(async () => {
-        const [ok, value] = await getInfo(url);
-        if (ok) {
-            info = value;
-        } else {
-            push("Erro ao carregar dados do servidor");
-        }
-    });
 </script>
 
 <button
@@ -30,6 +18,6 @@
     <div
         class="absolute bg-slate-700 w-20 rounded-md items-center justify-center flex left-full ml-2 opacity-0 translate-x-2 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0"
     >
-        <p>{info?.title}</p>
+        <p>{data.title}</p>
     </div>
 </button>

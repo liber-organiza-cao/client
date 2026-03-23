@@ -1,11 +1,12 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
     import { getInfo, type GetInfoResponse } from "$lib/api";
-    import { servers } from "$lib/ServerManager.svelte";
+    import useServers from "$lib/server.svelte";
     import { debounce } from "$lib/utils";
 
     let url = $state("");
     let serverInfo: GetInfoResponse | undefined = $state();
+    let { servers } = useServers();
 
     async function updateInfo() {
         const [ok, value] = await getInfo(url);
@@ -17,7 +18,7 @@
     }
 
     async function submit() {
-        servers.update((s) => [...s, url]);
+        servers.update((s) => ({ ...s, [url]: serverInfo! }));
         goto("/");
     }
 </script>
