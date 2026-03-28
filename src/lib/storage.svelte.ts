@@ -25,12 +25,7 @@ export function useStorage<T>(key: string, defaultValue: T): Writable<T> {
 
     };
 
-    $effect(() => {
-        window.addEventListener(eventKey, handleEventUpdate as EventListener);
-        return () => {
-            window.removeEventListener(eventKey, handleEventUpdate as EventListener);
-        };
-    });
+    window.addEventListener(eventKey, handleEventUpdate as EventListener);
 
     return value;
 }
