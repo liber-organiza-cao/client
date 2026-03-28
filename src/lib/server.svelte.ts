@@ -1,14 +1,13 @@
-import type { GetInfoResponse } from "./api";
 import { useStorage } from "./storage.svelte";
 
-export interface Server {
+export interface ServerData {
     url: string,
-    data: GetInfoResponse
+    title: string
 }
 
 export default function useServers() {
-    let servers = useStorage<Record<string, GetInfoResponse>>("servers", {});
-    let currentServer = useStorage<Server | undefined>("currentServer", undefined);
+    let servers = useStorage<Record<string, ServerData>>("servers", {});
+    let currentServer = useStorage<ServerData | undefined>("currentServer", undefined);
 
     return {
         servers,

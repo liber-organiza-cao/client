@@ -17,8 +17,14 @@
         }
     }
 
-    async function submit() {
-        servers.update((s) => ({ ...s, [url]: serverInfo! }));
+    function submit() {
+        servers.update((s) => ({
+            ...s,
+            [url]: {
+                ...serverInfo!,
+                url,
+            },
+        }));
         goto("/");
     }
 </script>
