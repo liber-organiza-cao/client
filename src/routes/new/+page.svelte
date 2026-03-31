@@ -27,6 +27,12 @@
         }));
         goto("/");
     }
+
+    $effect(() => {
+        if (url) {
+            debounce(updateInfo)();
+        }
+    });
 </script>
 
 <div
@@ -43,8 +49,7 @@
         <h1 class="text-white h-6">{serverInfo?.title}</h1>
         <input
             bind:value={url}
-            onchange={debounce(updateInfo)}
-            class=" text-white p-2 rounded-md border-2"
+            class="text-white p-2 rounded-md border-2"
             placeholder="https://example.com"
         />
         <button

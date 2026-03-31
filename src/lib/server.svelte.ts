@@ -2,7 +2,8 @@ import { useStorage } from "./storage.svelte";
 
 export interface ServerData {
     url: string,
-    title: string
+    title: string,
+    channels: string[],
 }
 
 export default function useServers() {

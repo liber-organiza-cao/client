@@ -2,7 +2,8 @@ import { err, ok, type Result } from "./error";
 import { fetch } from "./utils";
 
 export interface GetInfoResponse {
-    title: string
+    title: string,
+    channels: string[],
 }
 
 export async function getInfo(url: string): Promise<Result<GetInfoResponse, any>> {
