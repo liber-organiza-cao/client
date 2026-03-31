@@ -5,6 +5,7 @@ import { writable, type Writable } from "svelte/store";
 const { currentServer } = useServers();
 
 interface ServerToClientEvents {
+    updateMessages: (messages: string[]) => void,
     messageReceived: (message: string) => void,
 }
 

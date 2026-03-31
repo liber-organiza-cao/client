@@ -23,9 +23,15 @@
         scrollToBottom();
     }
 
+    async function updateMessages(messages: string[]) {
+        msgs = messages;
+        scrollToBottom();
+    }
+
     io.subscribe((socket) => {
         console.log("Socket updated:", socket);
         socket?.on("messageReceived", messageReceived);
+        socket?.on("updateMessages", updateMessages);
     });
 </script>
 
