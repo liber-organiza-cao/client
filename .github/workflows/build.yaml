@@ -37,6 +37,7 @@ jobs:
           mv .git build &&
           cd build &&
           touch .nojekyll &&
+          echo "alvorada.site" > CNAME &&
           git add . &&
           git commit -m "build" &&
           git push --force
