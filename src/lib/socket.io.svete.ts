@@ -1,5 +1,6 @@
 import { io, Socket } from "socket.io-client";
 import useServers from "./server.svelte";
+import { writable, type Writable } from "svelte/store";
 
 const { currentServer } = useServers();
 
@@ -11,14 +12,10 @@ interface ClientToServerEvents {
     sendMessage: (message: string) => void,
 }
 
-let ioConnection: Socket<ServerToClientEvents, ClientToServerEvents> | null = null;
+let ioConnection: Writable<Socket<ServerToClientEvents, ClientToServerEvents> | undefined> = writable(undefined);
 
 currentServer.subscribe((server) => {
-    if (server) {
-        ioConnection = io(server.url);
-    } else {
-        ioConnection = null;
-    };
+    ioConnection.set(server ? io(server.url) : undefined);
 })
 
 export default ioConnection;

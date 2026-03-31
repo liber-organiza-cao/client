@@ -1,6 +1,6 @@
 <script lang="ts">
     import io from "$lib/socket.io.svete";
-    import { onMount } from "svelte";
+    import { get } from "svelte/store";
 
     let msgs = $state<string[]>([]);
     let msgContent = $state("");
@@ -14,7 +14,7 @@
 
     async function sendMessage() {
         if (!msgContent.trim()) return;
-        io?.emit("sendMessage", msgContent);
+        get(io)?.emit("sendMessage", msgContent);
         msgContent = "";
     }
 
@@ -23,8 +23,9 @@
         scrollToBottom();
     }
 
-    onMount(() => {
-        io?.on("messageReceived", messageReceived);
+    io.subscribe((socket) => {
+        console.log("Socket updated:", socket);
+        socket?.on("messageReceived", messageReceived);
     });
 </script>
 
