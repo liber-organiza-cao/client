@@ -31,21 +31,22 @@
     }
 
     io.subscribe((socket) => {
-        console.log("Socket updated:", socket);
         socket?.on("messageReceived", messageReceived);
         socket?.on("updateMessages", updateMessages);
     });
 </script>
 
-<div class="flex h-screen flex-col">
-    <div
-        bind:this={scrollContainer}
-        class="flex w-full h-full p-10 overflow-y-auto"
-    >
-        <div class="flex flex-col gap-4">
-            {#each msgs as msg}
-                <div class="bg-gray-800 p-2 rounded-md">{msg}</div>
-            {/each}
+<div class="flex h-screen w-full flex-col">
+    <div class="flex w-full h-full p-4 overflow-y-auto">
+        <div
+            bind:this={scrollContainer}
+            class="flex w-full h-full overflow-y-auto"
+        >
+            <div class="flex flex-col gap-4">
+                {#each msgs as msg}
+                    <div class="bg-gray-800 p-2 rounded-md">{msg}</div>
+                {/each}
+            </div>
         </div>
     </div>
     <hr />
