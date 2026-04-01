@@ -1,12 +1,14 @@
 <script lang="ts">
     import io from "$lib/socket.io.svete";
+    import { tick } from "svelte";
     import { get } from "svelte/store";
 
     let msgs = $state<string[]>([]);
     let msgContent = $state("");
     let scrollContainer: HTMLDivElement | null = null;
 
-    function scrollToBottom() {
+    async function scrollToBottom() {
+        await tick();
         if (scrollContainer) {
             scrollContainer.scrollTop = scrollContainer.scrollHeight;
         }
@@ -20,12 +22,12 @@
 
     async function messageReceived(content: string) {
         msgs = [...msgs, content];
-        scrollToBottom();
+        await scrollToBottom();
     }
 
     async function updateMessages(messages: string[]) {
         msgs = messages;
-        scrollToBottom();
+        await scrollToBottom();
     }
 
     io.subscribe((socket) => {
