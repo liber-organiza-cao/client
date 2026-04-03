@@ -4,13 +4,18 @@ import { get, writable, type Writable } from "svelte/store";
 
 const { currentServer } = useServers();
 
+export interface Message {
+    id: number,
+    content: string,
+}
+
 interface ServerToClientEvents {
-    updateMessages: (messages: string[]) => void,
-    messageReceived: (message: string) => void,
+    messageReceived: (message: Message) => void,
 }
 
 interface ClientToServerEvents {
     sendMessage: (message: string) => void,
+    loadMessages: (beforeId?: number, callback?: (messages: Message[]) => void) => void,
 }
 
 let ioConnection: Writable<Socket<ServerToClientEvents, ClientToServerEvents> | undefined> = writable(undefined);

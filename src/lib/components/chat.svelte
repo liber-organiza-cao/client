@@ -1,11 +1,19 @@
 <script lang="ts">
     import io from "$lib/socket.io.svete";
+    import type { Message } from "$lib/socket.io.svete";
     import { tick } from "svelte";
     import { get } from "svelte/store";
 
-    let msgs = $state<string[]>([]);
+    let msgs = $state<Message[]>([]);
     let msgContent = $state("");
+    let isLoadingMessages = $state(false);
+    let hasMore = $state(true);
+
     let scrollContainer: HTMLDivElement | null = null;
+    let previousScrollHeight = 0;
+    let previousScrollTop = 0;
+
+    const beforeId = $derived<number | undefined>(msgs?.[0]?.id);
 
     async function scrollToBottom() {
         await tick();
@@ -20,19 +28,59 @@
         msgContent = "";
     }
 
-    async function messageReceived(content: string) {
-        msgs = [...msgs, content];
+    async function messageReceived(message: Message) {
+        msgs = [...msgs, message];
         await scrollToBottom();
     }
 
-    async function updateMessages(messages: string[]) {
-        msgs = messages;
-        await scrollToBottom();
+    async function messagesLoaded(messages: Message[]) {
+        hasMore = messages.length > 0;
+        msgs = [...messages, ...msgs];
+
+        await tick();
+
+        if (scrollContainer) {
+            scrollContainer.scrollTop =
+                scrollContainer.scrollHeight -
+                previousScrollHeight +
+                previousScrollTop;
+        }
+
+        isLoadingMessages = false;
+        return;
+    }
+
+    function loadMessages() {
+        if (isLoadingMessages || !hasMore) return;
+
+        if (scrollContainer) {
+            previousScrollHeight = scrollContainer.scrollHeight;
+            previousScrollTop = scrollContainer.scrollTop;
+        }
+
+        isLoadingMessages = true;
+
+        get(io)?.emit("loadMessages", beforeId, messagesLoaded);
+    }
+
+    function onScroll() {
+        if (!scrollContainer) return;
+
+        if (scrollContainer.scrollTop <= 24) {
+            loadMessages();
+        }
     }
 
     io.subscribe((socket) => {
-        socket?.on("messageReceived", messageReceived);
-        socket?.on("updateMessages", updateMessages);
+        msgs = [];
+        hasMore = true;
+        isLoadingMessages = false;
+
+        if (!socket) return;
+
+        socket.on("messageReceived", messageReceived);
+
+        loadMessages();
     });
 </script>
 
@@ -40,11 +88,12 @@
     <div class="flex w-full h-full p-4 overflow-y-auto">
         <div
             bind:this={scrollContainer}
+            onscroll={onScroll}
             class="flex w-full h-full overflow-y-auto"
         >
             <div class="flex flex-col gap-4">
                 {#each msgs as msg}
-                    <div class="bg-gray-800 p-2 rounded-md">{msg}</div>
+                    <div class="bg-gray-800 p-2 rounded-md">{msg.content}</div>
                 {/each}
             </div>
         </div>
