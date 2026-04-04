@@ -1,7 +1,17 @@
 <script lang="ts">
+    import { goto } from "$app/navigation";
+    import { useAuth } from "$lib/auth";
     import Chat from "$lib/components/chat.svelte";
     import ChatsPanel from "$lib/components/chatsPanel.svelte";
     import SidePanel from "$lib/components/sidePanel.svelte";
+    import { onMount } from "svelte";
+
+    onMount(() => {
+        const auth = useAuth();
+        if (!auth) {
+            goto("/login");
+        }
+    });
 </script>
 
 <div
