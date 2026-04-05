@@ -1,6 +1,7 @@
 <script lang="ts">
     import useServers from "$lib/server.svelte";
-    const { currentServer, servers } = useServers();
+
+    const { currentServer } = useServers();
 </script>
 
 <aside class="flex w-60 flex-col border-r gap-4">

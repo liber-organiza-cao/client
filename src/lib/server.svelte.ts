@@ -7,7 +7,7 @@ export interface ServerData {
 }
 
 export default function useServers() {
-    let servers = useStorage<Record<string, ServerData>>("servers", {});
+    let servers = useStorage<ServerData[]>("servers", []);
     let currentServer = useStorage<ServerData | undefined>("currentServer", undefined);
 
     return {

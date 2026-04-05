@@ -18,13 +18,13 @@
     }
 
     function submit() {
-        servers.update((s) => ({
+        servers.update((s) => [
             ...s,
-            [url]: {
+            {
                 ...serverInfo!,
                 url,
             },
-        }));
+        ]);
         goto("/");
     }
 
