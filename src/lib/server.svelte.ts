@@ -1,9 +1,14 @@
 import { useStorage } from "./storage.svelte";
 
+export interface Channel {
+    id: number,
+    name: string,
+}
+
 export interface ServerData {
     url: string,
     title: string,
-    channels: string[],
+    channels: Channel[],
 }
 
 export default function useServers() {

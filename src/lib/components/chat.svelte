@@ -89,7 +89,7 @@
         <div
             bind:this={scrollContainer}
             onscroll={onScroll}
-            class="flex w-full h-full overflow-y-auto"
+            class="flex w-full h-full overflow-y-auto font-mono"
         >
             <div class="flex flex-col gap-4">
                 {#each msgs as msg}

@@ -1,9 +1,14 @@
 import { err, ok, type Result } from "./error";
 import { fetch } from "./utils";
 
+export interface Channel {
+    id: number,
+    name: string,
+}
+
 export interface GetInfoResponse {
     title: string,
-    channels: string[],
+    channels: Channel[],
 }
 
 export async function getInfo(url: string): Promise<Result<GetInfoResponse, any>> {
