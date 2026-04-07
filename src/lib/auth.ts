@@ -22,7 +22,9 @@ export async function login(words: string[]) {
     const wordsStr = words.join(" ");
     const seed = await bip39.mnemonicToSeedSync(wordsStr);
 
-    const { secretKey, publicKey } = secp.keygen(seed);
+    const { secretKey: secretKeyBytes, publicKey: publicKeyBytes } = secp.keygen(seed);
+    const secretKey = Array.from(secretKeyBytes);
+    const publicKey = Array.from(publicKeyBytes);
 
     const base64PublicKey = bytesToBase64(publicKey);
     const base64SecretKey = bytesToBase64(secretKey);
@@ -44,8 +46,10 @@ export function useAuth() {
     const publicKey = base64ToBytes(publicKeyBase64);
     const secretKey = base64ToBytes(secretKeyBase64);
 
-    function sign(message: Uint8Array): Uint8Array {
-        return secp.sign(message, secretKey, { prehash: false, format: "compact" });
+    function sign(data: number[]): number[] {
+        const secretKeyBytes = new Uint8Array(secretKey);
+        const signaturer = secp.sign(new Uint8Array(data), secretKeyBytes, { prehash: false, format: "compact" });
+        return [...signaturer]
     }
 
     return { publicKey, secretKey, sign };

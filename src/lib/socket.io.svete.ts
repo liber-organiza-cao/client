@@ -39,11 +39,10 @@ ioConnection.subscribe((socket) => {
         return;
     }
 
-    socket.emit("requestAuthChallenge", [...auth.publicKey], (secretArray) => {
-        const secret = new Uint8Array(secretArray);
+    socket.emit("requestAuthChallenge", auth.publicKey, (secret) => {
         const signature = auth.sign(secret);
 
-        socket.emit("confirmAuthChallenge", [...signature], (valid) => {
+        socket.emit("confirmAuthChallenge", signature, (valid) => {
             if (valid) {
                 info("Authentication successful");
             } else {

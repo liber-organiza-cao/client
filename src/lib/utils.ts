@@ -27,11 +27,11 @@ export async function fetch(input: URL | Request | string, init?: RequestInit): 
 	return await parseErr<Response, any>(window.fetch, input, init);
 }
 
-export function bytesToBase64(bytes: Uint8Array): string {
+export function bytesToBase64(bytes: number[]): string {
 	return btoa(String.fromCharCode(...bytes));
 }
 
-export function base64ToBytes(base64: string): Uint8Array {
+export function base64ToBytes(base64: string): number[] {
 	const binary = atob(base64);
 	const len = binary.length;
 	const bytes = new Uint8Array(len);
@@ -40,5 +40,5 @@ export function base64ToBytes(base64: string): Uint8Array {
 		bytes[i] = binary.charCodeAt(i);
 	}
 
-	return bytes;
+	return Array.from(bytes);
 }
