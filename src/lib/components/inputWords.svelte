@@ -70,13 +70,13 @@
     }
 </script>
 
-<div class="w-full max-w-md bg-zinc-900 text-white rounded-xl">
+<div class="w-full max-w-md bg-gray-800 text-white rounded-xl">
     <div
         class="flex flex-wrap items-center gap-2 p-3 rounded-xl border shadow-sm"
     >
         {#each words as word}
             <span
-                class="bg-zinc-700 text-blue-100 px-2 py-1 rounded-lg text-sm"
+                class="bg-gray-700 text-blue-100 px-2 py-1 rounded-lg text-sm"
             >
                 {word}
             </span>

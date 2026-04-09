@@ -5,7 +5,7 @@
     import ChatsPanel from "$lib/components/chatsPanel.svelte";
     import SidePanel from "$lib/components/sidePanel.svelte";
     import { info, warn } from "$lib/log";
-    import { currentChannel, currentServer, servers } from "$lib/server.svelte";
+    import { currentServer, servers } from "$lib/server.svelte";
     import socket from "$lib/socket.io.svete";
     import { io } from "socket.io-client";
     import { onMount } from "svelte";
@@ -71,19 +71,20 @@
                 Adicionar servidor
             </a>
         </div>
-    {:else}
-        <div class="grid w-full grid-cols-[auto_auto_1fr_auto]">
+    {:else if $currentServer}
+        <div class="grid w-full h-full grid-cols-[auto_auto_1fr_auto]">
             <SidePanel />
-            {#if $currentServer}
-                <ChatsPanel />
-                <Chat />
-            {:else}
-                <div
-                    class="flex flex-col items-center justify-center gap-4 w-full h-full"
-                >
-                    <h1 class="text-2xl text-center">Selecione um servidor</h1>
-                </div>
-            {/if}
+            <ChatsPanel />
+            <Chat />
+        </div>
+    {:else}
+        <div class="flex flex-row w-full h-full">
+            <SidePanel />
+            <div
+                class="flex w-full h-full flex-col items-center justify-center gap-4"
+            >
+                <h1 class="text-2xl text-center">Selecione um servidor</h1>
+            </div>
         </div>
     {/if}
 </div>

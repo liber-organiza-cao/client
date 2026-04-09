@@ -24,7 +24,7 @@
 </script>
 
 <div
-    class="flex items-center justify-center w-screen h-screen bg-zinc-950 text-white"
+    class="flex items-center justify-center w-screen h-screen bg-gray-900 text-white"
 >
     <div>
         <h1 class="text-2xl font-bold mb-4 text-center">Login</h1>

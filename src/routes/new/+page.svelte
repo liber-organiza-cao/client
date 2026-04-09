@@ -35,7 +35,7 @@
 </script>
 
 <div
-    class="flex flex-col w-screen h-screen items-center justify-center bg-zinc-950"
+    class="flex flex-col w-screen h-screen items-center justify-center bg-gray-900"
 >
     <form
         class="flex flex-col items-center gap-2"
@@ -44,17 +44,19 @@
             submit();
         }}
     >
-        <img class="w-44 h-44" src={`${url}/icon`} alt="icon" />
+        {#if serverInfo}
+            <img class="w-44 h-44" src={`${url}/icon`} alt="icon" />
+        {/if}
         <h1 class="text-white h-6">{serverInfo?.title}</h1>
         <input
             bind:value={url}
-            class="text-white p-2 rounded-md border-2"
+            class="text-white p-2 rounded-md border-2 border-gray-700 bg-gray-800"
             placeholder="https://example.com"
         />
         <button
             type="submit"
             disabled={serverInfo == undefined}
-            class="w-full bg-zinc-900 text-white p-2 rounded-md cursor-pointer"
+            class="w-full bg-gray-800 text-white p-2 rounded-md cursor-pointer"
             >Adicionar</button
         >
     </form>
