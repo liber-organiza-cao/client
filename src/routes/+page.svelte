@@ -5,7 +5,7 @@
     import ChatsPanel from "$lib/components/chatsPanel.svelte";
     import SidePanel from "$lib/components/sidePanel.svelte";
     import { info, warn } from "$lib/log";
-    import { currentServer, servers } from "$lib/server.svelte";
+    import { currentChannel, currentServer, servers } from "$lib/server.svelte";
     import socket from "$lib/socket.io.svete";
     import { io } from "socket.io-client";
     import { onMount } from "svelte";
@@ -13,7 +13,7 @@
 
     const auth = useAuth();
 
-    async function authHandler(secret: number[]) {
+    function authHandler(secret: number[]) {
         const signature = auth!.sign(secret);
 
         get(socket)!.emit("confirmAuthChallenge", signature, (valid) => {
@@ -25,11 +25,11 @@
         });
     }
 
-    async function onSocketConnect() {
+    function onSocketConnect() {
         get(socket)!.emit("requestAuthChallenge", auth!.publicKey, authHandler);
     }
 
-    async function onSocketDisconnect() {}
+    function onSocketDisconnect() {}
 
     currentServer.subscribe((server) => {
         const url = server?.url;
@@ -58,7 +58,7 @@
     });
 </script>
 
-<div class="flex w-screen h-screen bg-gray-900 text-white">
+<div class="w-screen h-screen bg-gray-900 text-white">
     {#if $servers.length == 0}
         <div
             class="flex flex-col items-center justify-center gap-4 w-full h-full"

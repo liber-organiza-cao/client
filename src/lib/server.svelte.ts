@@ -13,3 +13,4 @@ export interface ServerData {
 
 export const servers = useStorage<ServerData[]>("servers", []);
 export const currentServer = useStorage<ServerData | undefined>("currentServer", undefined);
+export const currentChannel = useStorage<Channel | undefined>("currentChannel", undefined);

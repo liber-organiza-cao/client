@@ -2,6 +2,7 @@
     import { tick } from "svelte";
     import { get } from "svelte/store";
     import socket, { type Message } from "$lib/socket.io.svete";
+    import { currentChannel } from "$lib/server.svelte";
 
     let messages = $state<Message[]>([]);
     let messageContent = $state("");
@@ -71,13 +72,15 @@
     }
 
     socket.subscribe((socket) => {
-        messages = [];
-        hasMore = true;
-        isLoadingMessages = false;
-
         if (!socket) return;
 
         socket.on("messageReceived", messageReceived);
+    });
+
+    currentChannel.subscribe(() => {
+        messages = [];
+        hasMore = true;
+        isLoadingMessages = false;
 
         loadMessages();
     });

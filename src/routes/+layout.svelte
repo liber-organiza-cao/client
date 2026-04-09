@@ -7,7 +7,10 @@
 	let { children }: { children: Snippet } = $props();
 </script>
 
-<svelte:head><link rel="icon" href={pexe} /></svelte:head>
+<svelte:head>
+	<title>Concord</title>
+	<link rel="icon" href={pexe} />
+</svelte:head>
 
 <Toast />
 

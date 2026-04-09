@@ -11,6 +11,7 @@ export interface ServerToClientEvents {
 }
 
 export interface ClientToServerEvents {
+    joinChannel: (channelId: number) => void,
     sendMessage: (message: string) => void,
     loadMessages: (beforeId?: number, callback?: (messages: Message[]) => void) => void,
     requestAuthChallenge: (publicKey: number[], callback: (secret: number[]) => void) => void,
