@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { error } from "$lib/log";
     import {
         currentChannel,
         currentServer,
@@ -8,14 +9,11 @@
     import { get } from "svelte/store";
 
     function selectChannel(channel: Channel) {
-        currentChannel.set(channel);
+        get(socket)?.emit("joinChannel", channel.id, (success) => {
+            if (success) currentChannel.set(channel);
+            else error("Failed to join channel");
+        });
     }
-
-    currentChannel.subscribe((channel) => {
-        if (channel) {
-            get(socket)?.emit("joinChannel", channel.id);
-        }
-    });
 </script>
 
 <aside class="flex w-60 flex-col border-r">
