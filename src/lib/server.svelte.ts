@@ -1,3 +1,4 @@
+import { writable } from "svelte/store";
 import { useStorage } from "./storage.svelte";
 
 export interface Channel {
@@ -13,4 +14,4 @@ export interface ServerData {
 
 export const servers = useStorage<ServerData[]>("servers", []);
 export const currentServer = useStorage<ServerData | undefined>("currentServer", undefined);
-export const currentChannel = useStorage<Channel | undefined>("currentChannel", undefined);
+export const currentChannel = writable<Channel | undefined>();

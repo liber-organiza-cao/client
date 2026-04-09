@@ -5,7 +5,7 @@
     import ChatsPanel from "$lib/components/chatsPanel.svelte";
     import SidePanel from "$lib/components/sidePanel.svelte";
     import { info, warn } from "$lib/log";
-    import { currentServer, servers } from "$lib/server.svelte";
+    import { currentChannel, currentServer, servers } from "$lib/server.svelte";
     import socket from "$lib/socket.io.svete";
     import { io } from "socket.io-client";
     import { onMount } from "svelte";
@@ -19,6 +19,7 @@
         get(socket)!.emit("confirmAuthChallenge", signature, (valid) => {
             if (valid) {
                 info("Authentication successful");
+                onAuthtenticated();
             } else {
                 warn("Authentication failed");
             }
@@ -31,7 +32,10 @@
 
     function onSocketDisconnect() {}
 
+    function onAuthtenticated() {}
+
     currentServer.subscribe((server) => {
+        currentChannel.set(undefined);
         const url = server?.url;
 
         socket.update((oldSocket) => {
@@ -75,7 +79,9 @@
         <div class="grid w-full h-full grid-cols-[auto_auto_1fr_auto]">
             <SidePanel />
             <ChatsPanel />
-            <Chat />
+            {#if $currentChannel}
+                <Chat />
+            {/if}
         </div>
     {:else}
         <div class="flex flex-row w-full h-full">
