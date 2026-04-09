@@ -11,12 +11,5 @@ export interface ServerData {
     channels: Channel[],
 }
 
-export default function useServers() {
-    let servers = useStorage<ServerData[]>("servers", []);
-    let currentServer = useStorage<ServerData | undefined>("currentServer", undefined);
-
-    return {
-        servers,
-        currentServer
-    }
-}
+export const servers = useStorage<ServerData[]>("servers", []);
+export const currentServer = useStorage<ServerData | undefined>("currentServer", undefined);

@@ -1,7 +1,5 @@
 <script lang="ts">
-    import useServers from "$lib/server.svelte";
-
-    const { currentServer } = useServers();
+    import { currentServer } from "$lib/server.svelte";
 </script>
 
 <aside class="flex w-60 flex-col border-r py-4 gap-4">

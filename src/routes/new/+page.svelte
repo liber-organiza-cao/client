@@ -1,12 +1,11 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
     import { getInfo, type GetInfoResponse } from "$lib/api";
-    import useServers from "$lib/server.svelte";
+    import { servers } from "$lib/server.svelte";
     import { debounce } from "$lib/utils";
 
     let url = $state("");
     let serverInfo: GetInfoResponse | undefined = $state();
-    let { servers } = useServers();
 
     async function updateInfo() {
         const [ok, value] = await getInfo(url);

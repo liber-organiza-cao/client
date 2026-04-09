@@ -4,36 +4,86 @@
     import Chat from "$lib/components/chat.svelte";
     import ChatsPanel from "$lib/components/chatsPanel.svelte";
     import SidePanel from "$lib/components/sidePanel.svelte";
-    import useServers from "$lib/server.svelte";
+    import { info, warn } from "$lib/log";
+    import { currentServer, servers } from "$lib/server.svelte";
+    import socket from "$lib/socket.io.svete";
+    import { io } from "socket.io-client";
     import { onMount } from "svelte";
+    import { get } from "svelte/store";
 
-    const { servers } = useServers();
+    const auth = useAuth();
+
+    async function authHandler(secret: number[]) {
+        const signature = auth!.sign(secret);
+
+        get(socket)!.emit("confirmAuthChallenge", signature, (valid) => {
+            if (valid) {
+                info("Authentication successful");
+            } else {
+                warn("Authentication failed");
+            }
+        });
+    }
+
+    async function onSocketConnect() {
+        get(socket)!.emit("requestAuthChallenge", auth!.publicKey, authHandler);
+    }
+
+    async function onSocketDisconnect() {}
+
+    currentServer.subscribe((server) => {
+        const url = server?.url;
+
+        socket.update((oldSocket) => {
+            oldSocket?.disconnect();
+            const socket = url ? io(url) : null;
+
+            socket?.on("connect", () => {
+                info("OnSocketConnect");
+                onSocketConnect();
+            });
+            socket?.on("disconnect", () => {
+                info("OnSocketDisconnect");
+                onSocketDisconnect();
+            });
+
+            return socket;
+        });
+    });
 
     onMount(() => {
-        const auth = useAuth();
         if (!auth) {
             goto("/login");
         }
     });
 </script>
 
-<div
-    class="grid w-screen grid-cols-[auto_auto_1fr_auto] border-gray-500 bg-gray-900 text-white"
->
+<div class="flex w-screen h-screen bg-gray-900 text-white">
     {#if $servers.length == 0}
         <div
-            class="flex flex-col items-center justify-center gap-4 w-screen h-screen"
+            class="flex flex-col items-center justify-center gap-4 w-full h-full"
         >
             <h1 class="text-2xl">Nenhum servidor adicionado</h1>
             <a
-                href="/new"
                 class="bg-gray-800 p-2 rounded-md text-white cursor-pointer"
-                >Adicionar servidor</a
+                href="/new"
             >
+                Adicionar servidor
+            </a>
         </div>
     {:else}
-        <SidePanel />
-        <ChatsPanel />
-        <Chat />
+        <div class="grid w-full grid-cols-[auto_auto_1fr_auto]">
+            <SidePanel />
+            {#if $currentServer}
+                <ChatsPanel />
+                <Chat />
+            {:else}
+                <div
+                    class="flex flex-col items-center justify-center gap-4 w-full h-full"
+                >
+                    <h1 class="text-2xl text-center">Selecione um servidor</h1>
+                </div>
+            {/if}
+        </div>
     {/if}
 </div>

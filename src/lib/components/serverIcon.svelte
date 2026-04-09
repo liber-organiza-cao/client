@@ -1,8 +1,7 @@
 <script lang="ts">
-    import useServers, { type ServerData } from "$lib/server.svelte";
+    import { currentServer, type ServerData } from "$lib/server.svelte";
 
     const { data }: { data: ServerData } = $props();
-    let { currentServer } = useServers();
 
     async function onClick() {
         currentServer.set(data);

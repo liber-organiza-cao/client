@@ -1,11 +1,10 @@
 <script lang="ts">
-    import io from "$lib/socket.io.svete";
-    import type { Message } from "$lib/socket.io.svete";
     import { tick } from "svelte";
     import { get } from "svelte/store";
+    import socket, { type Message } from "$lib/socket.io.svete";
 
-    let msgs = $state<Message[]>([]);
-    let msgContent = $state("");
+    let messages = $state<Message[]>([]);
+    let messageContent = $state("");
     let isLoadingMessages = $state(false);
     let hasMore = $state(true);
 
@@ -13,7 +12,7 @@
     let previousScrollHeight = 0;
     let previousScrollTop = 0;
 
-    const beforeId = $derived<number | undefined>(msgs?.[0]?.id);
+    const beforeId = $derived<number | undefined>(messages?.[0]?.id);
 
     async function scrollToBottom() {
         await tick();
@@ -23,19 +22,19 @@
     }
 
     async function sendMessage() {
-        if (!msgContent.trim()) return;
-        get(io)?.emit("sendMessage", msgContent);
-        msgContent = "";
+        if (!messageContent.trim()) return;
+        get(socket)?.emit("sendMessage", messageContent);
+        messageContent = "";
     }
 
     async function messageReceived(message: Message) {
-        msgs = [...msgs, message];
+        messages = [...messages, message];
         await scrollToBottom();
     }
 
-    async function messagesLoaded(messages: Message[]) {
-        hasMore = messages.length > 0;
-        msgs = [...messages, ...msgs];
+    async function messagesLoaded(msgs: Message[]) {
+        hasMore = msgs.length > 0;
+        messages = [...msgs, ...messages];
 
         await tick();
 
@@ -60,7 +59,7 @@
 
         isLoadingMessages = true;
 
-        get(io)?.emit("loadMessages", beforeId, messagesLoaded);
+        get(socket)?.emit("loadMessages", beforeId, messagesLoaded);
     }
 
     function onScroll() {
@@ -71,8 +70,8 @@
         }
     }
 
-    io.subscribe((socket) => {
-        msgs = [];
+    socket.subscribe((socket) => {
+        messages = [];
         hasMore = true;
         isLoadingMessages = false;
 
@@ -92,7 +91,7 @@
             class="flex w-full h-full overflow-y-auto font-mono"
         >
             <div class="flex flex-col gap-4">
-                {#each msgs as msg}
+                {#each messages as msg}
                     <div class="bg-gray-800 p-2 rounded-md">{msg.content}</div>
                 {/each}
             </div>
@@ -107,7 +106,7 @@
         }}
     >
         <textarea
-            bind:value={msgContent}
+            bind:value={messageContent}
             onkeydown={(event) => {
                 if (event.key === "Enter" && !event.shiftKey) {
                     event.preventDefault();
