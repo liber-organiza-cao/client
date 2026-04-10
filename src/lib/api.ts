@@ -2,7 +2,7 @@ import { err, ok, type Result } from "./error";
 import { fetch } from "./utils";
 
 export interface Channel {
-    id: number,
+    id: string,
     name: string,
 }
 

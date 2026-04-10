@@ -13,7 +13,7 @@
     let previousScrollHeight = 0;
     let previousScrollTop = 0;
 
-    const beforeId = $derived<number | undefined>(messages?.[0]?.id);
+    const beforeId = $derived<string | undefined>(messages?.[0]?.id);
 
     async function scrollToBottom() {
         await tick();

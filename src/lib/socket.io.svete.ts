@@ -2,7 +2,7 @@ import { Socket } from "socket.io-client";
 import { writable } from "svelte/store";
 
 export interface Message {
-    id: number,
+    id: string,
     content: string,
 }
 
@@ -11,9 +11,9 @@ export interface ServerToClientEvents {
 }
 
 export interface ClientToServerEvents {
-    joinChannel: (channelId: number, callback: (success: boolean) => void) => void,
+    joinChannel: (channelId: string, callback: (success: boolean) => void) => void,
     sendMessage: (message: string) => void,
-    loadMessages: (beforeId?: number, callback?: (messages: Message[]) => void) => void,
+    loadMessages: (beforeId?: string, callback?: (messages: Message[]) => void) => void,
     requestAuthChallenge: (publicKey: number[], callback: (secret: number[]) => void) => void,
     confirmAuthChallenge: (signature: number[], callback: (valid: boolean) => void) => void,
 }

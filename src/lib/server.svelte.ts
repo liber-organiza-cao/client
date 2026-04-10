@@ -2,7 +2,7 @@ import { writable } from "svelte/store";
 import { useStorage } from "./storage.svelte";
 
 export interface Channel {
-    id: number,
+    id: string,
     name: string,
 }
 
