@@ -9,50 +9,50 @@
     import socket from "$lib/socket.io.svete";
     import { io } from "socket.io-client";
     import { onMount } from "svelte";
-    import { get } from "svelte/store";
 
     const auth = useAuth();
 
-    function authHandler(secret: number[]) {
-        const signature = auth!.sign(secret);
-
-        get(socket)!.emit("confirmAuthChallenge", signature, (valid) => {
-            if (valid) {
-                info("Authentication successful");
-                onAuthtenticated();
-            } else {
-                warn("Authentication failed");
-            }
-        });
-    }
-
-    function onSocketConnect() {
-        get(socket)!.emit("requestAuthChallenge", auth!.publicKey, authHandler);
-    }
+    function onSocketConnect() {}
 
     function onSocketDisconnect() {}
 
-    function onAuthtenticated() {}
-
-    currentServer.subscribe((server) => {
+    currentServer.subscribe(async (server) => {
         currentChannel.set(undefined);
+
         const url = server?.url;
 
-        socket.update((oldSocket) => {
-            oldSocket?.disconnect();
-            const socket = url ? io(url) : null;
+        if (url) {
+            const [ok, value] = await auth!.authWithServer(url);
 
-            socket?.on("connect", () => {
-                info("OnSocketConnect");
-                onSocketConnect();
-            });
-            socket?.on("disconnect", () => {
-                info("OnSocketDisconnect");
-                onSocketDisconnect();
-            });
+            if (!ok) {
+                warn("Authentication with server failed", value);
+                return;
+            }
 
-            return socket;
-        });
+            const token = value.token;
+
+            socket.update((oldSocket) => {
+                oldSocket?.disconnect();
+
+                const socket = url ? io(url, { auth: { token } }) : null;
+
+                socket?.on("connect", () => {
+                    info("OnSocketConnect");
+                    onSocketConnect();
+                });
+                socket?.on("disconnect", () => {
+                    info("OnSocketDisconnect");
+                    onSocketDisconnect();
+                });
+
+                return socket;
+            });
+        } else {
+            socket.update((oldSocket) => {
+                oldSocket?.disconnect();
+                return null;
+            });
+        }
     });
 
     onMount(() => {

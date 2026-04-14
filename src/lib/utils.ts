@@ -26,19 +26,3 @@ export function parse<T>(input: any): T | undefined {
 export async function fetch(input: URL | Request | string, init?: RequestInit): Promise<Result<Response, any>> {
 	return await parseErr<Response, any>(window.fetch, input, init);
 }
-
-export function bytesToBase64(bytes: number[]): string {
-	return btoa(String.fromCharCode(...bytes));
-}
-
-export function base64ToBytes(base64: string): number[] {
-	const binary = atob(base64);
-	const len = binary.length;
-	const bytes = new Uint8Array(len);
-
-	for (let i = 0; i < len; i++) {
-		bytes[i] = binary.charCodeAt(i);
-	}
-
-	return Array.from(bytes);
-}

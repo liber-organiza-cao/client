@@ -1,6 +1,6 @@
 <script lang="ts">
     import { clamp } from "$lib/utils";
-    import { wordlists } from "bip39";
+    import { wordlist } from "@scure/bip39/wordlists/english.js";
 
     const {
         onWordAdd,
@@ -18,9 +18,7 @@
     let selected = $state(0);
 
     const suggestions = $derived(
-        wordlists.english.filter(
-            (s) => s.startsWith(input) && !words.includes(s),
-        ),
+        wordlist.filter((s) => s.startsWith(input) && !words.includes(s)),
     );
 
     $effect(() => {
