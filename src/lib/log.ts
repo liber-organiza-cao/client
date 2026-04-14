@@ -1,16 +1,25 @@
-export function error(message: any) {
-    const msg = typeof message == "string" ? message : JSON.stringify(message, Object.getOwnPropertyNames(message));
-    console.log(`[error]: ${msg}`);
+function formatArgs(args: any[]): string {
+    return args
+        .map(arg =>
+            typeof arg === "string"
+                ? arg
+                : JSON.stringify(arg, Object.getOwnPropertyNames(arg))
+        )
+        .join(" ");
 }
-export function warn(message: any) {
-    const msg = typeof message == "string" ? message : JSON.stringify(message, Object.getOwnPropertyNames(message));
-    console.log(`[warn]: ${msg}`);
+
+export function error(...args: any[]) {
+    console.log(`[error]: ${formatArgs(args)}`);
 }
-export function info(message: any) {
-    const msg = typeof message == "string" ? message : JSON.stringify(message, Object.getOwnPropertyNames(message));
-    console.log(`[info]: ${msg}`);
+
+export function warn(...args: any[]) {
+    console.log(`[warn]: ${formatArgs(args)}`);
 }
-export function debug(message: any) {
-    const msg = typeof message == "string" ? message : JSON.stringify(message, Object.getOwnPropertyNames(message));
-    console.log(`[debug]: ${msg}`);
+
+export function info(...args: any[]) {
+    console.log(`[info]: ${formatArgs(args)}`);
+}
+
+export function debug(...args: any[]) {
+    console.log(`[debug]: ${formatArgs(args)}`);
 }
