@@ -1,0 +1,1 @@
+import{Z as t}from"./gPcdwl_M.js";import{p as u}from"./ClgEvv7Y.js";function s(o,a){const e=`useStorage:${o}`,n=localStorage.getItem(e),c=u(n)??a,r=t(c);return r.subscribe(i=>{localStorage.setItem(e,JSON.stringify(i))}),r}const g=s("servers",[]),m=s("currentServer",void 0),v=t();export{m as a,v as c,g as s};
