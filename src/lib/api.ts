@@ -39,12 +39,13 @@ export async function getInfo(url: string): Promise<Result<GetInfoResponse, any>
     }
 }
 
-export async function challenge_request(url: string, publicKey: string): Promise<Result<ResponseAuthChallenge, any>> {
+export async function challenge_request(url: string, publicKey: Uint8Array): Promise<Result<ResponseAuthChallenge, any>> {
     const [okay, value] = await fetch(`${url}/auth/challenge/request`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-            public_key: publicKey,
+            public_key: Array.from(publicKey),
+
         }),
     });
     if (okay && value.ok) {
@@ -54,13 +55,13 @@ export async function challenge_request(url: string, publicKey: string): Promise
     }
 }
 
-export async function challenge_confirm(url: string, token: string, signature: string): Promise<Result<ResponseConfirmAuthChallenge, any>> {
+export async function challenge_confirm(url: string, token: string, signature: Uint8Array): Promise<Result<ResponseConfirmAuthChallenge, any>> {
     const [okay, value] = await fetch(`${url}/auth/challenge/confirm`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             token,
-            signature
+            signature: Array.from(signature)
         }),
     });
     if (okay && value.ok) {

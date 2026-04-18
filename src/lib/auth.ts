@@ -2,7 +2,7 @@ import { challenge_confirm, challenge_request } from './api';
 import { getCookie, setCookie } from './cookie';
 import * as crypto from "./crypto";
 import { err, ok } from './error';
-import { warn } from './log';
+import { info, warn } from './log';
 
 export async function login(mnemonic: string[]) {
     const seed = await crypto.mnemonicToSeed(mnemonic);
@@ -30,15 +30,16 @@ export function useAuth() {
     }
 
     async function authWithServer(url: string) {
-        const [okay, request] = await challenge_request(url, publicKey.toHex());
+        const [okay, request] = await challenge_request(url, publicKey);
 
         if (okay!) {
             const token = request.token;
             const hash = await crypto.sha256(new TextEncoder().encode(token));
-            const signature = sign(hash).toHex();
+            const signature = sign(hash);
             const [okay, confirm] = await challenge_confirm(url, token, signature);
 
             if (okay) {
+                info("Challenge confirmed", url);
                 return ok(confirm);
             } else {
                 warn("Challenge confirmation failed", confirm);
