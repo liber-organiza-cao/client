@@ -1,6 +1,7 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
-    import { generateWords, login } from "$lib/auth";
+    import { login } from "$lib/auth";
+    import * as crypto from "$lib/crypto";
     import InputWords from "$lib/components/inputWords.svelte";
 
     const listSize = 12;
@@ -34,7 +35,7 @@
                 type="button"
                 value="Generate"
                 onclick={() => {
-                    words = generateWords(listSize);
+                    words = crypto.generateMnemonic(listSize);
                 }}
                 class="cursor-pointer bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
             />

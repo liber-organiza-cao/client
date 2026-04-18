@@ -1,56 +1,55 @@
-import * as secp from '@noble/secp256k1';
-import * as bip39 from 'bip39';
-
+import { challenge_confirm, challenge_request } from './api';
 import { getCookie, setCookie } from './cookie';
-import { base64ToBytes, bytesToBase64 } from './utils';
-import { hmac } from '@noble/hashes/hmac.js';
-import { sha256 } from '@noble/hashes/sha2.js';
+import * as crypto from "./crypto";
+import { err, ok } from './error';
+import { info, warn } from './log';
 
-import buffer from "buffer";
+export async function login(mnemonic: string[]) {
+    const seed = await crypto.mnemonicToSeed(mnemonic);
+    const { publicKey, privateKey } = crypto.seedToKeys(seed);
 
-secp.hashes.hmacSha256 = (key, msg) => hmac(sha256, key, msg);
-secp.hashes.sha256 = sha256;
+    setCookie("publicKey", publicKey.toHex());
+    setCookie("privateKey", privateKey.toHex());
 
-(window as any).Buffer = (window as any).Buffer || buffer.Buffer;
-
-export function generateWords(wordLength: number): string[] {
-    const strength = (wordLength / 3) * 32;
-    return bip39.generateMnemonic(strength).split(" ");
-}
-
-export async function login(words: string[]) {
-    const wordsStr = words.join(" ");
-    const seed = await bip39.mnemonicToSeedSync(wordsStr);
-
-    const { secretKey: secretKeyBytes, publicKey: publicKeyBytes } = secp.keygen(seed);
-    const secretKey = Array.from(secretKeyBytes);
-    const publicKey = Array.from(publicKeyBytes);
-
-    const base64PublicKey = bytesToBase64(publicKey);
-    const base64SecretKey = bytesToBase64(secretKey);
-
-    setCookie("publicKey", base64PublicKey);
-    setCookie("secretKey", base64SecretKey);
-
-    return { secretKey, publicKey }
+    return { publicKey, privateKey }
 }
 
 export function useAuth() {
-    const publicKeyBase64 = getCookie("publicKey");
-    const secretKeyBase64 = getCookie("secretKey");
+    const publicKeyHex = getCookie("publicKey");
+    const privateKeyHex = getCookie("privateKey");
 
-    if (!publicKeyBase64 || !secretKeyBase64) {
+    if (!publicKeyHex || !privateKeyHex) {
         return undefined;
     }
 
-    const publicKey = base64ToBytes(publicKeyBase64);
-    const secretKey = base64ToBytes(secretKeyBase64);
+    const publicKey = Uint8Array.fromHex(publicKeyHex);
+    const privateKey = Uint8Array.fromHex(privateKeyHex);
 
-    function sign(data: number[]): number[] {
-        const secretKeyBytes = new Uint8Array(secretKey);
-        const signaturer = secp.sign(new Uint8Array(data), secretKeyBytes, { prehash: false, format: "compact" });
-        return [...signaturer]
+    function sign(data: Uint8Array): Uint8Array {
+        return crypto.sign(data, privateKey);
     }
 
-    return { publicKey, secretKey, sign };
+    async function authWithServer(url: string) {
+        const [okay, request] = await challenge_request(url, publicKey);
+
+        if (okay!) {
+            const token = request.token;
+            const hash = await crypto.sha256(new TextEncoder().encode(token));
+            const signature = sign(hash);
+            const [okay, confirm] = await challenge_confirm(url, token, signature);
+
+            if (okay) {
+                info("Challenge confirmed", url);
+                return ok(confirm);
+            } else {
+                warn("Challenge confirmation failed", confirm);
+                return err(confirm);
+            }
+        } else {
+            warn("Challenge request failed", request);
+            return err(request);
+        }
+    }
+
+    return { publicKey, privateKey, sign, authWithServer };
 }
