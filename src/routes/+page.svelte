@@ -5,61 +5,69 @@
     import ChatsPanel from "$lib/components/chatsPanel.svelte";
     import SidePanel from "$lib/components/sidePanel.svelte";
     import { info, warn } from "$lib/log";
-    import { currentChannel, currentServer, servers } from "$lib/server.svelte";
+    import {
+        currentChannel,
+        currentServer,
+        servers,
+        type ServerData,
+    } from "$lib/server.svelte";
     import socket from "$lib/socket.io.svete";
     import { io } from "socket.io-client";
     import { onMount } from "svelte";
 
     const auth = useAuth();
 
-    function onSocketConnect() {}
+    async function onSocketConnect() {}
 
-    function onSocketDisconnect() {}
+    async function onSocketDisconnect() {}
 
-    currentServer.subscribe(async (server) => {
+    async function onCurrentServerChange(current: ServerData | undefined) {
         currentChannel.set(undefined);
 
-        const url = server?.url;
+        const url = current?.url;
 
-        if (url) {
-            const [ok, value] = await auth!.authWithServer(url);
-
-            if (!ok) {
-                warn("Authentication with server failed", value);
-                return;
-            }
-
-            const token = value.token;
-
-            socket.update((oldSocket) => {
-                oldSocket?.disconnect();
-
-                const socket = url ? io(url, { auth: { token } }) : null;
-
-                socket?.on("connect", () => {
-                    info("OnSocketConnect");
-                    onSocketConnect();
-                });
-                socket?.on("disconnect", () => {
-                    info("OnSocketDisconnect");
-                    onSocketDisconnect();
-                });
-
-                return socket;
-            });
-        } else {
+        if (!url) {
             socket.update((oldSocket) => {
                 oldSocket?.disconnect();
                 return null;
             });
+            return;
         }
-    });
+
+        const [ok, value] = await auth!.authWithServer(url);
+
+        if (!ok) {
+            warn("Authentication with server failed", value);
+            return;
+        }
+
+        const token = value.token;
+
+        socket.update((oldSocket) => {
+            oldSocket?.disconnect();
+
+            const socket = url ? io(url, { auth: { token } }) : null;
+
+            socket?.on("connect", () => {
+                info("OnSocketConnect");
+                onSocketConnect();
+            });
+            socket?.on("disconnect", () => {
+                info("OnSocketDisconnect");
+                onSocketDisconnect();
+            });
+
+            return socket;
+        });
+    }
 
     onMount(() => {
         if (!auth) {
             goto("/login");
         }
     });
+
+    currentServer.subscribe(onCurrentServerChange);
 </script>
 
 <div class="w-screen h-screen bg-gray-900 text-white">

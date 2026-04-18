@@ -24,6 +24,6 @@ export interface ClientToServerEvents {
 
 export type SocketConnection = Socket<ServerToClientEvents, ClientToServerEvents>;
 
-let socket = writable<SocketConnection | null>(null);
+const socket = writable<SocketConnection | null>(null);
 
 export default socket;
