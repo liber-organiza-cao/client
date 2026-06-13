@@ -22,7 +22,3 @@ export function parse<T>(input: any): T | undefined {
 		return undefined;
 	}
 }
-
-export async function fetch(input: URL | Request | string, init?: RequestInit): Promise<Result<Response, any>> {
-	return await parseErr<Response, any>(window.fetch, input, init);
-}

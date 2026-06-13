@@ -25,10 +25,7 @@
 	"dependencies": {
 		"@fortawesome/free-brands-svg-icons": "^7.2.0",
 		"@fortawesome/free-solid-svg-icons": "^7.2.0",
-		"@noble/curves": "^2.2.0",
-		"@noble/hashes": "^2.2.0",
-		"@scure/bip39": "^2.0.1",
-		"socket.io-client": "^4.8.3",
+		"lib-concord-client": "github:liber-organiza-cao/lib-concord-client",
 		"svelte-fa": "^4.0.4"
 	}
 }

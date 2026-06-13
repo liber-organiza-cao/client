@@ -1,8 +1,12 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
     import { login } from "$lib/auth";
-    import * as crypto from "$lib/crypto";
     import InputWords from "$lib/components/inputWords.svelte";
+    import {
+        keygen,
+        mnemonicToSeed,
+        generateMnemonic,
+    } from "lib-concord-client/dist/crypto";
 
     const listSize = 12;
 
@@ -19,7 +23,9 @@
     }
 
     async function onSubmit() {
-        await login(words);
+        const seed = await mnemonicToSeed(words);
+        const { privateKey, publicKey } = keygen(seed);
+        login(publicKey, privateKey);
         goto("/");
     }
 </script>
@@ -35,7 +41,7 @@
                 type="button"
                 value="Generate"
                 onclick={() => {
-                    words = crypto.generateMnemonic(listSize);
+                    words = generateMnemonic();
                 }}
                 class="cursor-pointer bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
             />

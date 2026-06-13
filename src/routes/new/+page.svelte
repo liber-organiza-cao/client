@@ -1,6 +1,9 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
-    import { getInfo, type GetInfoResponse } from "$lib/api";
+    import {
+        getInfo,
+        type GetInfoResponse,
+    } from "lib-concord-client/dist/http";
     import { servers } from "$lib/server.svelte";
     import { debounce } from "$lib/utils";
 
@@ -8,12 +11,9 @@
     let serverInfo: GetInfoResponse | undefined = $state();
 
     async function updateInfo() {
-        const [ok, value] = await getInfo(url);
-        if (ok) {
-            serverInfo = value;
-        } else {
-            serverInfo = undefined;
-        }
+        try {
+            serverInfo = await getInfo(url);
+        } catch {}
     }
 
     function submit() {

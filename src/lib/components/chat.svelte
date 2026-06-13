@@ -1,8 +1,9 @@
 <script lang="ts">
     import { tick } from "svelte";
     import { get } from "svelte/store";
-    import socket, { type Message } from "$lib/socket.io.svete";
+    import client from "$lib/client";
     import { currentChannel } from "$lib/server.svelte";
+    import { type Message } from "lib-concord-client";
 
     let messages = $state<Message[]>([]);
     let messageContent = $state("");
@@ -24,7 +25,12 @@
 
     async function sendMessage() {
         if (!messageContent.trim()) return;
-        get(socket)?.emit("sendMessage", messageContent);
+        const clientInstance = get(client);
+
+        if (!clientInstance) return;
+
+        await clientInstance.sendMessage(messageContent);
+
         messageContent = "";
     }
 
@@ -47,10 +53,9 @@
         }
 
         isLoadingMessages = false;
-        return;
     }
 
-    function loadMessages() {
+    async function loadMessages() {
         if (isLoadingMessages || !hasMore) return;
 
         if (scrollContainer) {
@@ -60,7 +65,12 @@
 
         isLoadingMessages = true;
 
-        get(socket)?.emit("loadMessages", beforeId, messagesLoaded);
+        const clientInstance = get(client);
+
+        if (!clientInstance) return;
+
+        const messages = await clientInstance.loadMessages(beforeId);
+        await messagesLoaded(messages);
     }
 
     function onScroll() {
@@ -71,11 +81,11 @@
         }
     }
 
-    socket.subscribe((socket) => {
-        if (!socket) return;
+    const clientInstance = get(client);
 
-        socket.on("messageReceived", messageReceived);
-    });
+    if (clientInstance) {
+        clientInstance.onMessageReceived = messageReceived;
+    }
 
     currentChannel.subscribe(() => {
         messages = [];

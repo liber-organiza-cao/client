@@ -1,6 +1,6 @@
 <script lang="ts">
     import { clamp } from "$lib/utils";
-    import { wordlist } from "@scure/bip39/wordlists/english.js";
+    import { englishWordlist as wordlist } from "lib-concord-client/dist/crypto";
 
     const {
         onWordAdd,
