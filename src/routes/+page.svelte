@@ -4,20 +4,33 @@
     import Chat from "$lib/components/chat.svelte";
     import ChatsPanel from "$lib/components/chatsPanel.svelte";
     import SidePanel from "$lib/components/sidePanel.svelte";
-    import { info, warn } from "$lib/log";
+    import { info } from "$lib/log";
     import {
         currentChannel,
         currentServer,
         servers,
         type ServerData,
     } from "$lib/server.svelte";
-    import socket from "$lib/socket.io.svete";
-    import { io } from "socket.io-client";
+    import client from "$lib/client";
     import { onMount } from "svelte";
+    import { Client } from "lib-concord-client";
+    import { sha256, sign } from "lib-concord-client/dist/crypto";
+    import { stringToUint8Array } from "lib-concord-client/dist/utils";
 
     const auth = useAuth();
 
-    async function onSocketConnect() {}
+    async function onSocketConnect(client: Client) {
+        const challengeValue = await client.requestChallenge(auth?.publicKey!);
+
+        const hash = sha256(stringToUint8Array(challengeValue.token));
+        const signature = sign(hash, auth?.privateKey!);
+        const confirmValue = await client.confirmChallenge(
+            challengeValue.token,
+            signature,
+        );
+
+        await client.auth(confirmValue.token);
+    }
 
     async function onSocketDisconnect() {}
 
@@ -26,38 +39,24 @@
 
         const url = current?.url;
 
-        if (!url) {
-            socket.update((oldSocket) => {
-                oldSocket?.disconnect();
-                return null;
-            });
-            return;
-        }
+        client.update((old: Client | null) => {
+            old?.close();
 
-        const [ok, value] = await auth!.authWithServer(url);
+            if (!url) return null;
 
-        if (!ok) {
-            warn("Authentication with server failed", value);
-            return;
-        }
+            const client = new Client(url);
 
-        const token = value.token;
-
-        socket.update((oldSocket) => {
-            oldSocket?.disconnect();
-
-            const socket = url ? io(url, { auth: { token } }) : null;
-
-            socket?.on("connect", () => {
+            client.onOpen = async () => {
                 info("OnSocketConnect");
-                onSocketConnect();
-            });
-            socket?.on("disconnect", () => {
+                onSocketConnect(client);
+            };
+
+            client.onClose = () => {
                 info("OnSocketDisconnect");
                 onSocketDisconnect();
-            });
+            };
 
-            return socket;
+            return client;
         });
     }
 

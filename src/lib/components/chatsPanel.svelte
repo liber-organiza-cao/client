@@ -1,18 +1,19 @@
 <script lang="ts">
-    import { error } from "$lib/log";
     import {
         currentChannel,
         currentServer,
         type Channel,
     } from "$lib/server.svelte";
-    import socket from "$lib/socket.io.svete";
+    import client from "$lib/client";
     import { get } from "svelte/store";
 
-    function selectChannel(channel: Channel) {
-        get(socket)?.emit("joinChannel", channel.id, (success) => {
-            if (success) currentChannel.set(channel);
-            else error("Failed to join channel");
-        });
+    async function selectChannel(channel: Channel) {
+        const clientInstance = get(client);
+        if (!clientInstance) return;
+
+        const current = await clientInstance.joinChannel(channel.id);
+
+        currentChannel.set(current);
     }
 </script>
 
