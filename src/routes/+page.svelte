@@ -13,7 +13,7 @@
     } from "$lib/server.svelte";
     import client from "$lib/client";
     import { onMount } from "svelte";
-    import { Client } from "lib-concord-client";
+    import { Client, type Channel } from "lib-concord-client";
     import { sha256, sign } from "lib-concord-client/dist/crypto";
     import { stringToUint8Array } from "lib-concord-client/dist/utils";
     import AddServerModal from "$lib/components/addServerModal.svelte";
@@ -21,6 +21,7 @@
     const auth = useAuth();
 
     let showAddServerModal = $state(false);
+    let channelList: Channel[] = $state([]);
 
     async function onClientConnect(client: Client) {
         const challengeValue = await client.requestChallenge(auth?.publicKey!);
@@ -34,6 +35,8 @@
         );
 
         await client.auth(confirmValue.token);
+
+        channelList = await client.listChannels();
     }
 
     async function onClientDisconnect() {}
@@ -100,7 +103,7 @@
     {:else if $currentServer}
         <div class="grid w-full h-full grid-cols-[auto_auto_1fr_auto]">
             <SidePanel onAddServerClick={() => (showAddServerModal = true)} />
-            <ChatsPanel />
+            <ChatsPanel {channelList} />
             {#if $currentChannel}
                 <Chat />
             {/if}

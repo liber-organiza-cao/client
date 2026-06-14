@@ -1,15 +1,10 @@
 import { writable } from "svelte/store";
 import { useStorage } from "./storage.svelte";
-
-export interface Channel {
-    id: string,
-    name: string,
-}
+import type { Channel } from "lib-concord-client";
 
 export interface ServerData {
     url: string,
     title: string,
-    channels: Channel[],
 }
 
 export const servers = useStorage<ServerData[]>("servers", []);

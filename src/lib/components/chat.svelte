@@ -70,6 +70,7 @@
         if (!clientInstance) return;
 
         const messages = await clientInstance.loadMessages(beforeId);
+
         await messagesLoaded(messages);
     }
 
