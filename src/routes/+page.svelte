@@ -16,8 +16,11 @@
     import { Client } from "lib-concord-client";
     import { sha256, sign } from "lib-concord-client/dist/crypto";
     import { stringToUint8Array } from "lib-concord-client/dist/utils";
+    import AddServerModal from "$lib/components/addServerModal.svelte";
 
     const auth = useAuth();
+
+    let showAddServerModal = $state(false);
 
     async function onSocketConnect(client: Client) {
         const challengeValue = await client.requestChallenge(auth?.publicKey!);
@@ -70,21 +73,32 @@
 </script>
 
 <div class="w-screen h-screen bg-gray-900 text-white">
+    {#if showAddServerModal}
+        <AddServerModal
+            onServerAdd={(v: ServerData) => {
+                servers.update((s) => [...s, v]);
+                showAddServerModal = false;
+            }}
+            onClose={() => {
+                showAddServerModal = false;
+            }}
+        />
+    {/if}
     {#if $servers.length == 0}
         <div
             class="flex flex-col items-center justify-center gap-4 w-full h-full"
         >
             <h1 class="text-2xl">Nenhum servidor adicionado</h1>
-            <a
+            <button
                 class="bg-gray-800 p-2 rounded-md text-white cursor-pointer"
-                href="/new"
+                onclick={() => (showAddServerModal = true)}
             >
                 Adicionar servidor
-            </a>
+            </button>
         </div>
     {:else if $currentServer}
         <div class="grid w-full h-full grid-cols-[auto_auto_1fr_auto]">
-            <SidePanel />
+            <SidePanel onAddServerClick={() => (showAddServerModal = true)} />
             <ChatsPanel />
             {#if $currentChannel}
                 <Chat />
@@ -92,7 +106,7 @@
         </div>
     {:else}
         <div class="flex flex-row w-full h-full">
-            <SidePanel />
+            <SidePanel onAddServerClick={() => (showAddServerModal = true)} />
             <div
                 class="flex w-full h-full flex-col items-center justify-center gap-4"
             >

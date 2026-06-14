@@ -1,6 +1,8 @@
 <script lang="ts">
     import { servers } from "$lib/server.svelte";
     import ServerIcon from "./serverIcon.svelte";
+
+    const { onAddServerClick } = $props();
 </script>
 
 <aside class="flex flex-col w-16 gap-2 border-r p-2">
@@ -9,5 +11,8 @@
             <ServerIcon {data} />
         {/each}
     </div>
-    <a href="/new" class="h-12 w-12 text-center">+</a>
+    <button
+        onclick={onAddServerClick}
+        class="h-12 w-12 text-center cursor-pointer">+</button
+    >
 </aside>
