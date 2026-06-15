@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onMount, tick } from "svelte";
     import { currentChannel } from "$lib/server.svelte";
-    import { Client, type Message } from "lib-concord-client";
+    import { Client, type Channel, type Message } from "lib-concord-client";
 
     let { client }: { client: Client } = $props();
 
@@ -75,12 +75,12 @@
         }
     }
 
-    currentChannel.subscribe(() => {
+    currentChannel.subscribe((value: Channel | undefined) => {
         messages = [];
         hasMore = true;
         isLoadingMessages = false;
 
-        loadMessages();
+        if (value) loadMessages();
     });
 
     onMount(() => {
