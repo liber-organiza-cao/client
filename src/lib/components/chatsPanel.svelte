@@ -1,16 +1,12 @@
 <script lang="ts">
     import { currentChannel, currentServer } from "$lib/server.svelte";
-    import client from "$lib/client";
-    import { get } from "svelte/store";
-    import type { Channel } from "lib-concord-client";
+    import type { Channel, Client } from "lib-concord-client";
 
-    const { channelList }: { channelList: Channel[] } = $props();
+    const { channelList, client }: { channelList: Channel[]; client: Client } =
+        $props();
 
     async function selectChannel(channel: Channel) {
-        const clientInstance = get(client);
-        if (!clientInstance) return;
-
-        const current = await clientInstance.joinChannel(channel.id);
+        const current = await client.joinChannel(channel.id);
 
         currentChannel.set(current);
     }

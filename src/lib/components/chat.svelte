@@ -1,9 +1,9 @@
 <script lang="ts">
-    import { tick } from "svelte";
-    import { get } from "svelte/store";
-    import client from "$lib/client";
+    import { onMount, tick } from "svelte";
     import { currentChannel } from "$lib/server.svelte";
-    import { type Message } from "lib-concord-client";
+    import { Client, type Message } from "lib-concord-client";
+
+    let { client }: { client: Client } = $props();
 
     let messages = $state<Message[]>([]);
     let messageContent = $state("");
@@ -25,11 +25,8 @@
 
     async function sendMessage() {
         if (!messageContent.trim()) return;
-        const clientInstance = get(client);
 
-        if (!clientInstance) return;
-
-        await clientInstance.sendMessage(messageContent);
+        await client.sendMessage(messageContent);
 
         messageContent = "";
     }
@@ -65,11 +62,7 @@
 
         isLoadingMessages = true;
 
-        const clientInstance = get(client);
-
-        if (!clientInstance) return;
-
-        const messages = await clientInstance.loadMessages(beforeId);
+        const messages = await client.loadMessages(beforeId);
 
         await messagesLoaded(messages);
     }
@@ -82,18 +75,16 @@
         }
     }
 
-    const clientInstance = get(client);
-
-    if (clientInstance) {
-        clientInstance.onMessageReceived = messageReceived;
-    }
-
     currentChannel.subscribe(() => {
         messages = [];
         hasMore = true;
         isLoadingMessages = false;
 
         loadMessages();
+    });
+
+    onMount(() => {
+        client.onMessageReceived = messageReceived;
     });
 </script>
 

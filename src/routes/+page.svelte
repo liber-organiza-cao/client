@@ -11,7 +11,6 @@
         servers,
         type ServerData,
     } from "$lib/server.svelte";
-    import client from "$lib/client";
     import { onMount } from "svelte";
     import { Client, type Channel } from "lib-concord-client";
     import { sha256, sign } from "lib-concord-client/dist/crypto";
@@ -21,6 +20,8 @@
     const auth = useAuth();
 
     let showAddServerModal = $state(false);
+
+    let client: Client | null = $state(null);
     let channelList: Channel[] = $state([]);
 
     async function onClientConnect(client: Client) {
@@ -46,25 +47,21 @@
 
         const url = current?.url;
 
-        client.update((old: Client | null) => {
-            old?.close();
+        client?.close();
 
-            if (!url) return null;
+        if (!url) return;
 
-            const client = new Client(url);
+        client = new Client(url);
 
-            client.onOpen = async () => {
-                info("onClientConnect");
-                onClientConnect(client);
-            };
+        client.onOpen = async () => {
+            info("onClientConnect");
+            onClientConnect(client!);
+        };
 
-            client.onClose = () => {
-                info("OnSocketDisconnect");
-                onClientDisconnect();
-            };
-
-            return client;
-        });
+        client.onClose = () => {
+            info("OnSocketDisconnect");
+            onClientDisconnect();
+        };
     }
 
     onMount(() => {
@@ -100,12 +97,12 @@
                 Adicionar servidor
             </button>
         </div>
-    {:else if $currentServer}
+    {:else if $currentServer && client}
         <div class="grid w-full h-full grid-cols-[auto_auto_1fr_auto]">
             <SidePanel onAddServerClick={() => (showAddServerModal = true)} />
-            <ChatsPanel {channelList} />
+            <ChatsPanel {channelList} {client} />
             {#if $currentChannel}
-                <Chat />
+                <Chat {client} />
             {/if}
         </div>
     {:else}
