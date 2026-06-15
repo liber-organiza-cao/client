@@ -104,7 +104,7 @@
     </div>
     <hr />
     <form
-        class="flex items-center gap-2 p-4"
+        class="flex items-center gap-2 p-2 h-18"
         onsubmit={(e) => {
             e.preventDefault();
             sendMessage();

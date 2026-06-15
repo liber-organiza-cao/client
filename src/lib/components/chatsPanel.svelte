@@ -1,9 +1,14 @@
 <script lang="ts">
+    import { useAuth } from "$lib/auth";
     import { currentChannel, currentServer } from "$lib/server.svelte";
     import type { Channel, Client } from "lib-concord-client";
+    import { push } from "./toast.svelte";
 
     const { channelList, client }: { channelList: Channel[]; client: Client } =
         $props();
+
+    const auth = useAuth();
+    const pubKey = auth?.publicKey.toHex() ?? "";
 
     async function selectChannel(channel: Channel) {
         const current = await client.joinChannel(channel.id);
@@ -27,5 +32,15 @@
                 <span># {channel.name}</span>
             </button>
         {/each}
+    </div>
+    <hr />
+    <div class="flex flex-col p-4 h-18 justify-center">
+        <button
+            class="truncate cursor-pointer"
+            onclick={() => {
+                navigator.clipboard.writeText(pubKey);
+                push("Copied to clipboard");
+            }}>{pubKey}</button
+        >
     </div>
 </aside>
