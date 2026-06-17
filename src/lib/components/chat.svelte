@@ -1,18 +1,15 @@
 <script lang="ts">
     import { onMount, tick } from "svelte";
-    import { currentChannel } from "$lib/server.svelte";
-    import { Client, type Channel, type Message } from "lib-concord-client";
+    import { Client, type Message } from "lib-concord-client";
 
     let { client }: { client: Client } = $props();
 
     let messages = $state<Message[]>([]);
     let messageContent = $state("");
-    let isLoadingMessages = $state(false);
-    let hasMore = $state(true);
 
     let scrollContainer: HTMLDivElement | null = null;
-    let previousScrollHeight = 0;
-    let previousScrollTop = 0;
+    let isLoadingMessages = false;
+    let hasMore = true;
 
     const beforeId = $derived<string | undefined>(messages?.[0]?.id);
 
@@ -38,33 +35,34 @@
 
     async function messagesLoaded(msgs: Message[]) {
         hasMore = msgs.length > 0;
-        messages = [...msgs, ...messages];
-
-        await tick();
 
         if (scrollContainer) {
+            const previousScrollHeight = scrollContainer.scrollHeight;
+            const previousScrollTop = scrollContainer.scrollTop;
+
+            messages = [...msgs, ...messages];
+
+            await tick();
+
             scrollContainer.scrollTop =
                 scrollContainer.scrollHeight -
                 previousScrollHeight +
                 previousScrollTop;
+        } else {
+            messages = [...msgs, ...messages];
         }
-
-        isLoadingMessages = false;
     }
 
     async function loadMessages() {
         if (isLoadingMessages || !hasMore) return;
-
-        if (scrollContainer) {
-            previousScrollHeight = scrollContainer.scrollHeight;
-            previousScrollTop = scrollContainer.scrollTop;
-        }
 
         isLoadingMessages = true;
 
         const messages = await client.loadMessages(beforeId);
 
         await messagesLoaded(messages);
+
+        isLoadingMessages = false;
     }
 
     function onScroll() {
@@ -75,16 +73,10 @@
         }
     }
 
-    currentChannel.subscribe((value: Channel | undefined) => {
-        messages = [];
-        hasMore = true;
-        isLoadingMessages = false;
-
-        if (value) loadMessages();
-    });
-
     onMount(() => {
         client.onMessageReceived = messageReceived;
+
+        loadMessages();
     });
 </script>
 

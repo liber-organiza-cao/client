@@ -1,11 +1,21 @@
 <script lang="ts">
-    import { useAuth } from "$lib/auth";
-    import { currentChannel, currentServer } from "$lib/server.svelte";
+    import type { ServerData } from "$lib/server.svelte";
     import type { Channel, Client } from "lib-concord-client";
+    import type { Writable } from "svelte/store";
+    import { useAuth } from "$lib/auth";
     import { push } from "./toast.svelte";
 
-    const { channelList, client }: { channelList: Channel[]; client: Client } =
-        $props();
+    const {
+        client,
+        channelList,
+        currentChannel,
+        currentServer,
+    }: {
+        client: Client;
+        channelList: Channel[];
+        currentChannel: Writable<Channel | undefined>;
+        currentServer: Writable<ServerData | undefined>;
+    } = $props();
 
     const auth = useAuth();
     const pubKey = auth?.publicKey.toHex() ?? "";

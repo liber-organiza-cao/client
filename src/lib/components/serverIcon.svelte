@@ -1,11 +1,13 @@
 <script lang="ts">
-    import { currentServer, type ServerData } from "$lib/server.svelte";
+    import { type ServerData } from "$lib/server.svelte";
 
-    const { data }: { data: ServerData } = $props();
-
-    async function onClick() {
-        currentServer.set(data);
-    }
+    const {
+        data,
+        onClick,
+    }: {
+        data: ServerData;
+        onClick: () => void;
+    } = $props();
 </script>
 
 <button

@@ -1,28 +1,32 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
     import { useAuth } from "$lib/auth";
+    import { info } from "$lib/log";
+    import { sha256, sign } from "lib-concord-client/dist/crypto";
+    import { stringToUint8Array } from "lib-concord-client/dist/utils";
+    import { useStorage } from "$lib/storage.svelte";
+    import { writable } from "svelte/store";
+    import { onMount } from "svelte";
+    import { type ServerData } from "$lib/server.svelte";
+    import { Client, type Channel } from "lib-concord-client";
+    import AddServerModal from "$lib/components/addServerModal.svelte";
     import Chat from "$lib/components/chat.svelte";
     import ChatsPanel from "$lib/components/chatsPanel.svelte";
     import SidePanel from "$lib/components/sidePanel.svelte";
-    import { info } from "$lib/log";
-    import {
-        currentChannel,
-        currentServer,
-        servers,
-        type ServerData,
-    } from "$lib/server.svelte";
-    import { onMount } from "svelte";
-    import { Client, type Channel } from "lib-concord-client";
-    import { sha256, sign } from "lib-concord-client/dist/crypto";
-    import { stringToUint8Array } from "lib-concord-client/dist/utils";
-    import AddServerModal from "$lib/components/addServerModal.svelte";
 
     const auth = useAuth();
 
-    let showAddServerModal = $state(false);
+    const servers = useStorage<ServerData[]>("servers", []);
+    const currentServer = useStorage<ServerData | undefined>(
+        "currentServer",
+        undefined,
+    );
+    const currentChannel = writable<Channel | undefined>();
 
     let client: Client | null = $state(null);
     let channelList: Channel[] = $state([]);
+
+    let showAddServerModal = $state(false);
 
     async function onClientConnect(client: Client) {
         const challengeValue = await client.requestChallenge(auth?.publicKey!);
@@ -99,15 +103,30 @@
         </div>
     {:else if $currentServer && client}
         <div class="grid w-full h-full grid-cols-[auto_auto_1fr_auto]">
-            <SidePanel onAddServerClick={() => (showAddServerModal = true)} />
-            <ChatsPanel {channelList} {client} />
+            <SidePanel
+                {servers}
+                {currentServer}
+                onAddServer={() => (showAddServerModal = true)}
+            />
+            <ChatsPanel
+                {channelList}
+                {currentChannel}
+                {currentServer}
+                {client}
+            />
             {#if $currentChannel}
-                <Chat {client} />
+                {#key $currentChannel}
+                    <Chat {client} />
+                {/key}
             {/if}
         </div>
     {:else}
         <div class="flex flex-row w-full h-full">
-            <SidePanel onAddServerClick={() => (showAddServerModal = true)} />
+            <SidePanel
+                {servers}
+                {currentServer}
+                onAddServer={() => (showAddServerModal = true)}
+            />
             <div
                 class="flex w-full h-full flex-col items-center justify-center gap-4"
             >
