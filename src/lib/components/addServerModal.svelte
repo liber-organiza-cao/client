@@ -14,7 +14,11 @@
 
     async function updateInfo(url: string) {
         try {
-            serverInfo = await getInfo(url);
+            if (URL.canParse(url)) {
+                serverInfo = await getInfo(url);
+            } else {
+                serverInfo = undefined;
+            }
         } catch {
             serverInfo = undefined;
         }
