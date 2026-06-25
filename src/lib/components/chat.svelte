@@ -116,26 +116,30 @@
             </div>
         </div>
     </div>
-    <hr />
     {#if isSendingMessage}
-        <div class="flex items-center justify-center h-20 w-full">
+        <hr />
+        <div class="flex items-center justify-center h-20 shrink-0 w-full">
             <Loading />
         </div>
     {:else}
+        {#if messageFiles}
+            <hr />
+            <div class="flex flex-row gap-2 p-2">
+                {#each messageFiles as file}
+                    <FilePreview {file} />
+                {/each}
+            </div>
+            <hr />
+        {:else}
+            <hr />
+        {/if}
         <form
-            class="flex flex-col w-full justify-center items-center gap-2 p-2"
+            class="flex flex-col w-full justify-center h-20 shrink-0 items-center gap-2 p-2"
             onsubmit={(e) => {
                 e.preventDefault();
                 sendMessage();
             }}
         >
-            {#if messageFiles}
-                <div class="flex flex-row gap-2">
-                    {#each messageFiles as file}
-                        <FilePreview {file} />
-                    {/each}
-                </div>
-            {/if}
             <div class="flex flex-row items-center w-full">
                 <label
                     class="flex items-center justify-center cursor-pointer w-10 h-10"

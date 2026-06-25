@@ -44,7 +44,7 @@
         {/each}
     </div>
     <hr />
-    <div class="flex flex-col p-4 h-18 justify-center">
+    <div class="flex flex-col p-4 h-20 justify-center">
         <button
             class="truncate cursor-pointer"
             onclick={() => {

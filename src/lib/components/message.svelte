@@ -6,7 +6,7 @@
     const { url, message }: { url: string; message: Message } = $props();
 </script>
 
-<div class="bg-gray-800 p-2 rounded-md">
+<div class="flex flex-col bg-gray-800 p-2 rounded-md">
     <p>{message.content}</p>
     <div class="flex flex-col items-start gap-4">
         {#each message.attachments as attachment}
@@ -38,9 +38,9 @@
                         <track kind="captions" />
                     </video>
                 {:else}
-                    <div>
-                        {attachment.name}
+                    <div class="flex gap-2">
                         <Fa class="text-5xl" icon={faFile} />
+                        {attachment.name}
                     </div>
                 {/if}
             </div>
