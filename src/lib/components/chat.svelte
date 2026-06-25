@@ -1,14 +1,22 @@
 <script lang="ts">
     import { onMount, tick } from "svelte";
     import { Client, type Message } from "lib-concord-client";
+    import Fa from "svelte-fa";
+    import { faUpload } from "@fortawesome/free-solid-svg-icons";
+    import { postFiles } from "lib-concord-client/dist/http";
+    import FilePreview from "./filePreview.svelte";
+    import Msg from "./message.svelte";
+    import Loading from "./loading.svelte";
 
     let { client }: { client: Client } = $props();
 
     let messages = $state<Message[]>([]);
     let messageContent = $state("");
+    let messageFiles: FileList | undefined = $state();
 
     let scrollContainer: HTMLDivElement | null = null;
     let isLoadingMessages = false;
+    let isSendingMessage = $state(false);
     let hasMore = true;
 
     const beforeId = $derived<string | undefined>(messages?.[0]?.id);
@@ -21,11 +29,25 @@
     }
 
     async function sendMessage() {
-        if (!messageContent.trim()) return;
+        if ((!messageContent.trim() && !messageFiles) || isSendingMessage)
+            return;
 
-        await client.sendMessage(messageContent);
+        try {
+            isSendingMessage = true;
 
-        messageContent = "";
+            if (messageFiles) {
+                const files = await postFiles(client.url(), messageFiles);
+                const fileIds = files.map((f) => f.id);
+
+                await client.sendMessage(messageContent, fileIds);
+            } else {
+                await client.sendMessage(messageContent, []);
+            }
+        } finally {
+            messageContent = "";
+            messageFiles = undefined;
+            isSendingMessage = false;
+        }
     }
 
     async function messageReceived(message: Message) {
@@ -89,29 +111,58 @@
         >
             <div class="flex flex-col gap-4">
                 {#each messages as msg}
-                    <div class="bg-gray-800 p-2 rounded-md">{msg.content}</div>
+                    <Msg message={msg} url={client.url()} />
                 {/each}
             </div>
         </div>
     </div>
     <hr />
-    <form
-        class="flex items-center gap-2 p-2 h-18"
-        onsubmit={(e) => {
-            e.preventDefault();
-            sendMessage();
-        }}
-    >
-        <textarea
-            bind:value={messageContent}
-            onkeydown={(event) => {
-                if (event.key === "Enter" && !event.shiftKey) {
-                    event.preventDefault();
-                    sendMessage();
-                }
+    {#if isSendingMessage}
+        <div class="flex items-center justify-center h-20 w-full">
+            <Loading />
+        </div>
+    {:else}
+        <form
+            class="flex flex-col w-full justify-center items-center gap-2 p-2"
+            onsubmit={(e) => {
+                e.preventDefault();
+                sendMessage();
             }}
-            class="w-full border rounded-md border-inherit bg-inherit p-1.5"
-        ></textarea>
-        <button type="submit" class="cursor-pointer text-3xl">▶️</button>
-    </form>
+        >
+            {#if messageFiles}
+                <div class="flex flex-row gap-2">
+                    {#each messageFiles as file}
+                        <FilePreview {file} />
+                    {/each}
+                </div>
+            {/if}
+            <div class="flex flex-row items-center w-full">
+                <label
+                    class="flex items-center justify-center cursor-pointer w-10 h-10"
+                    for="file-upload"
+                >
+                    <Fa class="text-2xl" icon={faUpload}></Fa>
+                    <input
+                        bind:files={messageFiles}
+                        class="hidden"
+                        type="file"
+                        id="file-upload"
+                        multiple
+                    />
+                </label>
+                <textarea
+                    bind:value={messageContent}
+                    onkeydown={(event) => {
+                        if (event.key === "Enter" && !event.shiftKey) {
+                            event.preventDefault();
+                            sendMessage();
+                        }
+                    }}
+                    class="w-full border rounded-md border-inherit bg-inherit p-1.5"
+                ></textarea>
+                <button type="submit" class="cursor-pointer text-3xl">▶️</button
+                >
+            </div>
+        </form>
+    {/if}
 </div>
